@@ -483,6 +483,21 @@ public class Fastboot {
    */
   public String rebootBootloader(String serial)
       throws MobileHarnessException, InterruptedException {
+    // Testing showed a 1-3 second delay before reboot. Wait 5.
+    return rebootBootloader(serial, Duration.ofSeconds(5L));
+  }
+
+  /**
+   * Reboots the device to bootloader.
+   *
+   * @param serial device serial number
+   * @param waitTime the time to wait for the device really being rebooted to bootloader
+   * @return the command output
+   * @throws MobileHarnessException if fails to execute the command or timeout
+   * @throws InterruptedException if the thread executing the command is interrupted
+   */
+  public String rebootBootloader(String serial, Duration waitTime)
+      throws MobileHarnessException, InterruptedException {
     checkFastboot();
     String output =
         runWithRetry(
@@ -493,9 +508,7 @@ public class Fastboot {
 
     // 'fastboot reboot-bootloader' can return immediately, before the device has rebooted.
     // If another flash command is issued before the device reboots, the flash will fail.
-    //
-    // Testing showed a 1-3 second delay before reboot. Wait 5.
-    Thread.sleep(5000);
+    Thread.sleep(waitTime.toMillis());
 
     return output;
   }
